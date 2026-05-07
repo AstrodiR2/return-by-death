@@ -16,8 +16,8 @@ public class ReturnByDeathMod implements ModInitializer {
 
     public static final String MOD_ID = "returnbydeath";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    public static final int SNAPSHOT_INTERVAL = 400; // 20 sec
 
-    public static final int SNAPSHOT_INTERVAL = 400;
     private static int tickCounter = 0;
     public static WorldSnapshot currentSnapshot = null;
     public static final Set<UUID> rollingBack = new HashSet<>();
@@ -37,20 +37,17 @@ public class ReturnByDeathMod implements ModInitializer {
         });
 
         ServerPlayerEvents.ALLOW_DEATH.register((player, source, amount) -> {
-            MinecraftServer server = player.server;
-            if (server == null) return true;
-
             UUID uuid = player.getUUID();
             if (rollingBack.contains(uuid)) return true;
 
             if (currentSnapshot != null) {
-                LOGGER.info("[ReturnByDeath] Player {} died — rolling back world!", player.getName().getString());
+                LOGGER.info("[ReturnByDeath] {} died — rolling back!", player.getName().getString());
                 ReturnByDeathPackets.sendDeathEffect(player);
 
-                server.scheduleOnNextTick(() -> rollbackWorld(server));
+                MinecraftServer server = player.server;
+                server.execute(() -> rollbackWorld(server));
                 return false;
             }
-
             return true;
         });
     }
@@ -61,28 +58,20 @@ public class ReturnByDeathMod implements ModInitializer {
             snapshot.savePlayer(player);
         }
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld != null) {
-            snapshot.saveChunks(overworld);
-        }
+        if (overworld != null) snapshot.saveChunks(overworld);
         currentSnapshot = snapshot;
-        LOGGER.debug("[ReturnByDeath] Snapshot saved.");
     }
 
     public static void rollbackWorld(MinecraftServer server) {
         if (currentSnapshot == null) return;
-
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-        if (overworld != null) {
-            currentSnapshot.restoreChunks(overworld);
-        }
-
+        if (overworld != null) currentSnapshot.restoreChunks(overworld);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             UUID uuid = player.getUUID();
             rollingBack.add(uuid);
             currentSnapshot.restorePlayer(player);
             rollingBack.remove(uuid);
         }
-
-        LOGGER.info("[ReturnByDeath] World rolled back successfully.");
+        LOGGER.info("[ReturnByDeath] Rollback complete.");
     }
 }

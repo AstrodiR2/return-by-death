@@ -3,8 +3,6 @@
   "package": "com.returnbydeath.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [],
-  "client": ["DeathScreenMixin"],
-  "injectors": {
-    "defaultRequire": 1
-  }
+  "client": [],
+  "injectors": { "defaultRequire": 1 }
 }

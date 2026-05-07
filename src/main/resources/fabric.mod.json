@@ -3,8 +3,8 @@
   "id": "returnbydeath",
   "version": "${version}",
   "name": "Return by Death",
-  "description": "Re:Zero inspired death mechanic. When you die, the world rolls back 20 seconds.",
-  "authors": ["You"],
+  "description": "Re:Zero inspired death rollback mod.",
+  "authors": ["AstrodiR2"],
   "environment": "*",
   "entrypoints": {
     "main": ["com.returnbydeath.ReturnByDeathMod"],

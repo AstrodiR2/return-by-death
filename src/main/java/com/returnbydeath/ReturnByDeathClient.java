@@ -8,7 +8,7 @@ public class ReturnByDeathClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        PayloadTypeRegistry.clientboundPlay().register(
+        PayloadTypeRegistry.playS2C().register(
             ReturnByDeathPackets.DeathEffectPayload.TYPE,
             ReturnByDeathPackets.DeathEffectPayload.CODEC
         );
@@ -17,11 +17,9 @@ public class ReturnByDeathClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(
             ReturnByDeathPackets.DeathEffectPayload.TYPE,
-            (payload, context) -> {
-                context.client().execute(() -> {
-                    DeathEffectRenderer.triggerDeathEffect(context.client());
-                });
-            }
+            (payload, context) -> context.client().execute(() ->
+                DeathEffectRenderer.triggerDeathEffect(context.client())
+            )
         );
     }
 }
