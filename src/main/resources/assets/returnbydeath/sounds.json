@@ -1,0 +1,10 @@
+{
+  "return_by_death": {
+    "sounds": [
+      {
+        "name": "returnbydeath:return_by_death",
+        "stream": false
+      }
+    ]
+  }
+}

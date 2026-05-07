@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "returnbydeath",
+  "version": "${version}",
+  "name": "Return by Death",
+  "description": "Re:Zero inspired death mechanic. When you die, the world rolls back 20 seconds.",
+  "authors": ["You"],
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.returnbydeath.ReturnByDeathMod"],
+    "client": ["com.returnbydeath.ReturnByDeathClient"]
+  },
+  "mixins": ["returnbydeath.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.5",
+    "fabric-api": "*",
+    "minecraft": "~26.1"
+  }
+}
