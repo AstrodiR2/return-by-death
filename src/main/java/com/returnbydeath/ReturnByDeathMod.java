@@ -7,13 +7,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,22 +17,17 @@ public class ReturnByDeathMod implements ModInitializer {
     public static final String MOD_ID = "returnbydeath";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    // How often to save snapshot (20 seconds * 20 ticks = 400 ticks)
     public static final int SNAPSHOT_INTERVAL = 400;
-
     private static int tickCounter = 0;
-
-    // The one snapshot — always overwritten
     public static WorldSnapshot currentSnapshot = null;
-
-    // Players currently being rolled back (to avoid death loop)
     public static final Set<UUID> rollingBack = new HashSet<>();
 
     @Override
     public void onInitialize() {
         LOGGER.info("[ReturnByDeath] Mod loaded.");
 
-        // Save snapshot every 20 seconds
+        ReturnByDeathPackets.registerServer();
+
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             tickCounter++;
             if (tickCounter >= SNAPSHOT_INTERVAL) {
@@ -48,26 +36,18 @@ public class ReturnByDeathMod implements ModInitializer {
             }
         });
 
-        // On player death — trigger rollback
         ServerPlayerEvents.ALLOW_DEATH.register((player, source, amount) -> {
-            MinecraftServer server = player.getServer();
+            MinecraftServer server = player.server;
             if (server == null) return true;
 
             UUID uuid = player.getUUID();
-            if (rollingBack.contains(uuid)) return true; // allow death during rollback
+            if (rollingBack.contains(uuid)) return true;
 
             if (currentSnapshot != null) {
                 LOGGER.info("[ReturnByDeath] Player {} died — rolling back world!", player.getName().getString());
-
-                // Tell client to play death effect
                 ReturnByDeathPackets.sendDeathEffect(player);
 
-                // Schedule rollback on next tick (can't modify world mid-death)
-                server.tell(new net.minecraft.server.TickTask(server.getTickCount() + 1, () -> {
-                    rollbackWorld(server);
-                }));
-
-                // Cancel death
+                server.scheduleOnNextTick(() -> rollbackWorld(server));
                 return false;
             }
 
@@ -77,17 +57,13 @@ public class ReturnByDeathMod implements ModInitializer {
 
     private void saveSnapshot(MinecraftServer server) {
         WorldSnapshot snapshot = new WorldSnapshot();
-
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             snapshot.savePlayer(player);
         }
-
-        // Save all loaded chunks in overworld
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
         if (overworld != null) {
             snapshot.saveChunks(overworld);
         }
-
         currentSnapshot = snapshot;
         LOGGER.debug("[ReturnByDeath] Snapshot saved.");
     }
@@ -96,13 +72,10 @@ public class ReturnByDeathMod implements ModInitializer {
         if (currentSnapshot == null) return;
 
         ServerLevel overworld = server.getLevel(Level.OVERWORLD);
-
-        // Restore blocks
         if (overworld != null) {
             currentSnapshot.restoreChunks(overworld);
         }
 
-        // Restore all players
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             UUID uuid = player.getUUID();
             rollingBack.add(uuid);

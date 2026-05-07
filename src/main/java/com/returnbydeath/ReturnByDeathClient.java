@@ -8,16 +8,13 @@ public class ReturnByDeathClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // Register packet type on client side too
-        PayloadTypeRegistry.playS2C().register(
+        PayloadTypeRegistry.clientboundPlay().register(
             ReturnByDeathPackets.DeathEffectPayload.TYPE,
             ReturnByDeathPackets.DeathEffectPayload.CODEC
         );
 
-        // Register HUD renderer and tick events
         DeathEffectRenderer.registerEvents();
 
-        // Handle death effect packet
         ClientPlayNetworking.registerGlobalReceiver(
             ReturnByDeathPackets.DeathEffectPayload.TYPE,
             (payload, context) -> {

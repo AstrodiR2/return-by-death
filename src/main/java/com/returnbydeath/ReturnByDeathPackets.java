@@ -2,7 +2,6 @@ package com.returnbydeath;
 
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -26,7 +25,7 @@ public class ReturnByDeathPackets {
     }
 
     public static void registerServer() {
-        PayloadTypeRegistry.playS2C().register(DeathEffectPayload.TYPE, DeathEffectPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(DeathEffectPayload.TYPE, DeathEffectPayload.CODEC);
     }
 
     public static void sendDeathEffect(ServerPlayer player) {
