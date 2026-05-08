@@ -1,7 +1,15 @@
 pluginManagement {
     repositories {
-        maven { url 'https://maven.fabricmc.net/' }
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
         gradlePluginPortal()
     }
 }
+
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.16.1' apply false
+}
+
 rootProject.name = 'return-by-death'
