@@ -6,16 +6,10 @@ plugins {
 version = project.property("mod_version") as String
 group = project.property("maven_group") as String
 
-loom {
-    // no mappings needed for unobfuscated MC 26.1
-}
-
 dependencies {
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    @Suppress("UnstableApiUsage")
-    modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    @Suppress("UnstableApiUsage")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
+    add("modImplementation", "net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    add("modImplementation", "net.fabricmc.fabric-api:fabric-api:${project.property("fabric_api_version")}")
 }
 
 tasks.processResources {
